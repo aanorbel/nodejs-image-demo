@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  nodejs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nodejs
+    container_name: nodejs
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  webserver:
+    image: library/nginx:alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - web-root:/var/www/html
+      - ./nginx-conf:/etc/nginx/conf.d
+      - ./nginx-certs:/etc/ssl:ro
+    depends_on:
+      - nodejs
+    networks:
+      - app-network
+
+volumes:
+  web-root:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/aanorbel/Code/Docker/nodejs-image-demo/views/
+      o: bind
+
+networks:
+  app-network:
+    driver: bridge  
